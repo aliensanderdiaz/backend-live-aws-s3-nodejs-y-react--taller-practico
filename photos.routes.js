@@ -5,9 +5,9 @@ const router = Router()
 
 router.get('/', (req, res) => res.send('Welcome'))
 
-router.post('/upload', async (req, res) => {
+router.post('/posts/upload', async (req, res) => {
     console.log({'req.files': req.files})
-    const result = await uploadFile(req.files['post'])
+    const result = await uploadFile(req.files['image'])
     console.log({ result })
     res.send('Archivo Subido')
 })

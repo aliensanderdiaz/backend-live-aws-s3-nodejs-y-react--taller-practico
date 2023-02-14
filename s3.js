@@ -26,6 +26,8 @@ async function uploadFile(file) {
         Body: stream
     }
 
+    console.log({ uploadParams })
+
     const command = new PutObjectCommand(uploadParams)
     
     return await client.send(command);

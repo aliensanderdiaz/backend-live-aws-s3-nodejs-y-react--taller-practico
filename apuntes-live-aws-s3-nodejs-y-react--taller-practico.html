@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+<title>LIVE AWS S3, Nodejs y React - Taller Práctico</title>
+</head>
+
+<body>
+<header class="text-center">
+<h1>LIVE AWS S3, Nodejs y React - Taller Práctico</h1>
+</header>
+<main class="container">
+<hr>
+
+<section class="row">
+  <article class="col">
+    <h2>3:45 Creación proyecto de React con VITE</h2>
+    <pre class="prettyprint">
+            
+        > npm create vite
+    </pre>
+    <p>Extensión: VS Code ES7+ React/Redux/React-Native/JS snippets</p>
+
+    <pre class="prettyprint">
+            
+        rfce
+    </pre>
+
+    <pre class="prettyprint">
+            
+        // src/App.jsx
+        import { useState } from "react"
+
+        function App() {
+            const [post, setPost] = useState({
+                title: '',
+                photo: null
+            })
+            return (
+                &ltdiv>
+                    &ltform>
+                        &ltinput type="text" placeholder="title"
+                        onChange={e => setPost({ ...post, title: e.target.value })} />
+
+                        &ltinput type="file" name="photo"
+                        onChange={e => setPost({ ...post, photo: e.target.files[0] })} />
+
+                        &ltbutton>Subir&lt/button>
+                    &lt/form>
+                &lt/div>
+            )
+        }
+
+        export default App
+    </pre>
+  </article>
+</section>
+
+<hr>
+
+<section class="row">
+  <article class="col">
+    <h2>11:50 Server</h2>
+    <pre class="prettyprint">
+            
+        > npm init -y
+        > npm i express
+        > npm i cors
+        > npm i express-fileupload
+        > npm i dotenv
+    </pre>
+
+    <pre class="prettyprint">
+        
+        // index.js
+        const express = require('express')
+        const fileUpload = require('express-fileupload')
+        const photosRoutes = require('./photos.routes')
+        
+        const app = express()
+        
+        app.use(fileUpload({
+            useTempFiles : true,
+            tempFileDir : './archivos'
+        }));
+        
+        app.use(photosRoutes)
+        
+        app.listen(3000)
+        console.log('Servidor 3000')
+    </pre>
+
+    <pre class="prettyprint">
+            
+        // photos.routes.js
+        const { Router } = require('express')
+
+        const router = Router()
+        
+        router.get('/', (req, res) => res.send('Welcome'))
+        
+        router.post('/upload', (req, res) => {
+            console.log(req.files)
+            res.send('Archivo Subido')
+        })
+        
+        module.exports = router
+        
+    </pre>
+  </article>
+</section>
+
+<hr>
+
+<section class="row">
+  <article class="col">
+    <h2>20:55 - Frontend</h2>
+    <pre class="prettyprint">
+            
+        > npm i axios
+    </pre>
+
+    <pre class="prettyprint">
+            
+        import axios from "axios"
+        import { useState } from "react"
+        
+        function App() {
+          const [post, setPost] = useState({
+            title: '',
+            photo: null
+          })
+        
+          const handleSubmit = async (e) => {
+            e.preventDefault()
+            const formData = new FormData()
+            formData.append('post', post.photo)
+            const response = await axios.post('http://127.0.0.1:3000/upload', formData, {
+              'Content-Type': 'multipart/form-data'
+            })
+        
+            console.log({ response })
+          }
+        
+          return (
+            &ltdiv>
+              &ltform onSubmit={handleSubmit}>
+                &ltinput type="text" placeholder="title"
+                  onChange={e => setPost({ ...post, title: e.target.value })} />
+        
+                &ltinput type="file" name="photo"
+                  onChange={e => setPost({ ...post, photo: e.target.files[0] })} />
+        
+                &ltbutton>Subir&lt/button>
+              &lt/form>
+            &lt/div>
+          )
+        }
+        
+        export default App
+    </pre>
+
+    <pre class="prettyprint">
+            
+        // backend
+        app.use(cors({
+            origin: 'http://127.0.0.1:5173'
+        }))
+    </pre>
+  </article>
+</section>
+
+<hr>
+
+<section class="row">
+  <article class="col">
+    <h2>32:00 Amazon</h2>
+    
+  </article>
+</section>
+
+<hr>
+
+<section class="row">
+  <article class="col">
+    <h2>40:00 .env</h2>
+    <pre class="prettyprint">
+            
+        AWS_BUCKET_NAME=XXXXXXXXXXXXXXXX
+        AWS_BUCKET_REGION=XXXXXXXXXXXXXXXX
+        AWS_ACCESS_KEY=XXXXXXXXXXXXXXXX
+        AWS_SECRET_KEY=XXXXXXXXXXXXXXXX
+    </pre>
+  </article>
+</section>
+
+<hr>
+
+<section class="row">
+  <article class="col">
+    <h2>41:46 - s3.js</h2>
+    <pre class="prettyprint">
+            
+        > npm install dotenv
+        > npm install @aws-sdk/client-s3
+    </pre>
+
+    <pre class="prettyprint">
+            
+        // s3.js
+        require('dotenv').config()
+        const fs = require('fs')
+        
+        const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+        
+        const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME
+        const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION
+        const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY
+        const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY
+        
+        const client = new S3Client({ region: AWS_BUCKET_REGION,
+            credentials: {
+                accessKeyId: AWS_ACCESS_KEY,
+                secretAccessKey: AWS_SECRET_KEY
+            }
+        });
+        
+        
+        async function uploadFile(file) {
+        
+            const stream = fs.createReadStream(file.tempFilePath)
+        
+            const uploadParams = {
+                Bucket: AWS_BUCKET_NAME,
+                Key: file.name,
+                Body: stream
+            }
+        
+            const command = new PutObjectCommand(uploadParams)
+            
+            return await client.send(command);
+        }
+        
+        async function readFile(fileName) {
+        
+            const command = new GetObjectCommand({
+                Bucket: AWS_BUCKET_NAME,
+                Key: fileName
+            })
+        
+            const result = await client.send(command);
+        
+            result.Body.pipe(fs.createWriteStream('./images/newimage.png'))
+        }
+        
+        
+        module.exports = {
+            uploadFile,
+            readFile
+        }
+    </pre>
+
+    <pre class="prettyprint">
+            
+        // photos.routes
+        const { Router } = require('express')
+        const { uploadFile, readFile } = require('./s3')
+        
+        const router = Router()
+        
+        router.get('/', (req, res) => res.send('Welcome'))
+        
+        router.post('/upload', async (req, res) => {
+            console.log({'req.files': req.files})
+            const result = await uploadFile(req.files['post'])
+            console.log({ result })
+            res.send('Archivo Subido')
+        })
+        
+        router.get('/archivo/:fileName', async (req, res) => {
+            try {
+                const result = await readFile(req.params.fileName)
+                console.log({ result })
+                res.send('Tu Archivo se ha descargado')
+            } catch (error) {
+                res.send(error.message)
+            }
+        })
+        
+        module.exports = router
+        
+    </pre>
+
+    <pre class="prettyprint">
+            
+        // index.js
+        const express = require('express')
+        const cors = require('cors')
+        const fileUpload = require('express-fileupload')
+        const photosRoutes = require('./photos.routes')
+        
+        const app = express()
+        
+        app.use(cors({
+            origin: 'http://127.0.0.1:5173'
+        }))
+        
+        app.use(fileUpload({
+            useTempFiles : true,
+            tempFileDir : './archivos'
+        }));
+        
+        app.use(photosRoutes)
+        
+        app.use(express.static('images'))
+        
+        app.listen(3000)
+        console.log('Servidor 3000')
+    </pre>
+  </article>
+</section>
+
+<hr>
+
+<section class="row">
+  <article class="col">
+    <h2>Pruebas</h2>
+    <p>
+        <a href="http://127.0.0.1:5173/" target="_blank" rel="noopener noreferrer">http://127.0.0.1:5173/</a>
+        <br>
+        <a href="http://127.0.0.1:3000/archivo/ionic.png" target="_blank" rel="noopener noreferrer">http://127.0.0.1:3000/archivo/ionic.png</a>
+        <br>
+        <a href="http://127.0.0.1:3000/newimage.png" target="_blank" rel="noopener noreferrer">http://127.0.0.1:3000/newimage.png</a>
+    </p>
+  </article>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
+
+</html>
